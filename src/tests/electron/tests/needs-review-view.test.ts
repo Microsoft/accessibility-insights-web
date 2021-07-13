@@ -12,8 +12,8 @@ import { commonAdbConfigs, setupMockAdb } from 'tests/miscellaneous/mock-adb/set
 describe('NeedsReviewView', () => {
     let app: AppController;
     let resultsViewController: ResultsViewController;
-    const windowWidth = getNarrowModeThresholdsForUnified().collapseHeaderAndNavThreshold + 5;
-    const windowHeight = 1000;
+    const width = getNarrowModeThresholdsForUnified().collapseHeaderAndNavThreshold + 5;
+    const height = 1000;
 
     beforeEach(async () => {
         await setupMockAdb(
@@ -23,7 +23,7 @@ describe('NeedsReviewView', () => {
         );
 
         app = await createApplication({ suppressFirstTimeDialog: true });
-        app.client.browserWindow.setSize(windowWidth, windowHeight);
+        app.client.setViewportSize({ width, height });
         resultsViewController = await app.openResultsView();
         await resultsViewController.clickLeftNavItem('needs-review');
     });

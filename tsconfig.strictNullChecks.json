@@ -461,7 +461,6 @@
         "./src/tests/electron/common/view-controllers/codecs-test-view-controller.ts",
         "./src/tests/electron/common/view-controllers/device-connection-dialog-controller.ts",
         "./src/tests/electron/common/view-controllers/log-controller.ts",
-        "./src/tests/electron/common/view-controllers/spectron-async-client.ts",
         "./src/tests/electron/common/view-controllers/tab-stops-view-controller.ts",
         "./src/tests/electron/common/view-controllers/view-controller.ts",
         "./src/tests/electron/common/view-controllers/virtual-keyboard-view-controller.ts",

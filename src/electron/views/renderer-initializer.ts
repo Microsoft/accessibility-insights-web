@@ -193,7 +193,9 @@ const indexedDBDataKeysToFetch = [
 
 const logger = createDefaultLogger();
 
-getPersistedData(indexedDBInstance, indexedDBDataKeysToFetch)
+getPersistedData(indexedDBInstance, indexedDBDataKeysToFetch, {
+    noPersistedData: process.env.ACCESSIBILITY_INSIGHTS_ELECTRON_CLEAR_DATA === 'true',
+})
     .then((persistedData: Partial<PersistedData>) => {
         const installationData: InstallationData = persistedData.installationData;
 

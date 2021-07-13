@@ -6,7 +6,7 @@ app.whenReady().then(() => {
     const win = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true,
-            enableRemoteModule: true,
+            contextIsolation: false,
         },
     });
     win.loadFile('codecs.html');

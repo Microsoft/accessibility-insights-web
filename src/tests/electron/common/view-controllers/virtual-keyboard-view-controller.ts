@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 import { KeyEventCode } from 'electron/platform/android/adb-wrapper';
 import { buildKeyboardButtonAutomationId } from 'electron/views/tab-stops/virtual-keyboard-buttons';
+import { Page } from 'playwright';
 import { getAutomationIdSelector } from 'tests/common/get-automation-id-selector';
-import { SpectronAsyncClient } from 'tests/electron/common/view-controllers/spectron-async-client';
 import { ViewController } from './view-controller';
 
 export class VirtualKeyboardViewController extends ViewController {
-    constructor(client: SpectronAsyncClient) {
+    constructor(client: Page) {
         super(client);
     }
 
@@ -15,7 +15,6 @@ export class VirtualKeyboardViewController extends ViewController {
         const automationId = buildKeyboardButtonAutomationId(KeyEventCode[virtualKey]);
         const selector = getAutomationIdSelector(automationId);
 
-        await this.waitForSelector(selector);
         await this.client.click(selector);
     }
 }

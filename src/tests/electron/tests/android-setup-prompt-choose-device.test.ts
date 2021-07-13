@@ -31,7 +31,6 @@ const [closeId, nextId, rescanId] = [
 describe('Android setup - prompt-choose-device (multiple devices)', () => {
     const multipleDescription = 'prompt-choose-device-multiple';
     const defaultDeviceConfig: MockAdbConfig = commonAdbConfigs['multiple-devices'];
-    const downArrowKey = '\uE015'; // "ArrowDown" value from https://w3c.github.io/webdriver/#keyboard-actions
 
     let app: AppController;
     let dialog: AndroidSetupViewController;
@@ -91,7 +90,7 @@ describe('Android setup - prompt-choose-device (multiple devices)', () => {
 
         // Select the second item in the list
         await dialog.click(getAutomationIdSelector(deviceDescriptionAutomationId));
-        await dialog.client.keys(downArrowKey);
+        await dialog.client.keyboard.press('ArrowDown');
         await dialog.waitForMilliseconds(1000);
         await dialog.click(getAutomationIdSelector(nextId));
         await dialog.waitForDialogVisible('detect-service');

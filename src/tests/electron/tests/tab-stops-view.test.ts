@@ -26,8 +26,8 @@ describe('TabStopsView', () => {
     let tabStopsViewController: TabStopsViewController;
     const mockAdbLogsBase = path.basename(__filename);
     const mockAdbLogsFolder = 'tabStopsLogs';
-    const windowWidth = getNarrowModeThresholdsForUnified().collapseHeaderAndNavThreshold + 5;
-    const windowHeight = 1000;
+    const width = getNarrowModeThresholdsForUnified().collapseHeaderAndNavThreshold + 5;
+    const height = 1000;
     const logsContext = path.join(mockAdbLogsBase, mockAdbLogsFolder);
 
     beforeEach(async () => {
@@ -35,8 +35,8 @@ describe('TabStopsView', () => {
 
         app = await createApplication({ suppressFirstTimeDialog: true });
         app.setFeatureFlag(UnifiedFeatureFlags.tabStops, true);
-        app.client.browserWindow.setSize(windowWidth, windowHeight);
-        logController = new LogController(logsContext, mockAdbFolder, app.client);
+        app.client.setViewportSize({ width, height });
+        logController = new LogController(logsContext, mockAdbFolder);
         tabStopsViewController = new TabStopsViewController(app.client);
         virtualKeyboardViewController = new VirtualKeyboardViewController(app.client);
         resultsViewController = await app.openResultsView();
@@ -44,7 +44,7 @@ describe('TabStopsView', () => {
     });
 
     afterEach(async () => {
-        if (app != null) {
+        if (app != null && !app.client.isClosed()) {
             await app.stop();
         }
     });

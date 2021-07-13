@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 import * as fs from 'fs';
 import * as util from 'util';
-import { SpectronAsyncClient } from 'tests/electron/common/view-controllers/spectron-async-client';
 import { DEFAULT_WAIT_FOR_LOG_TIMEOUT_MS } from 'tests/electron/setup/timeouts';
+import { tick } from 'tests/unit/common/tick';
 import {
     generateAdbLogPath,
     generateOutputLogsDir,
@@ -11,16 +11,11 @@ import {
 } from '../../../miscellaneous/mock-adb/generate-log-paths';
 
 const readFile = util.promisify(fs.readFile);
-
 export class LogController {
     private adbLogPath: string;
     private serverLogPath: string;
 
-    constructor(
-        currentContext: string,
-        private mockAdbPath: string,
-        private client: SpectronAsyncClient,
-    ) {
+    constructor(currentContext: string, private mockAdbPath: string) {
         this.adbLogPath = this.getAdbLogPath(currentContext);
         this.serverLogPath = this.getServerLogPath(currentContext);
     }
@@ -60,20 +55,45 @@ export class LogController {
     }
 
     private serverLogExists(): boolean {
-        return fs.existsSync(this.serverLogPath);
+        return fs.existsSync(this.adbLogPath);
     }
 
-    public async waitForAdbLogToContain(contains: string) {
-        const isLogReady = async () =>
-            this.adbLogExists() && (await this.getAdbLog()).includes(contains);
+    public waitUntil = async (waitFunction, args?, options?): Promise<void> => {
+        const { timeout } = options ? options : { timeout: DEFAULT_WAIT_FOR_LOG_TIMEOUT_MS };
+        let currentTime = Number(new Date());
+        const endTime = currentTime + timeout;
 
-        return this.client.waitUntil(isLogReady, { timeout: DEFAULT_WAIT_FOR_LOG_TIMEOUT_MS });
-    }
+        do {
+            const value = args ? await waitFunction(...args) : await waitFunction();
+            if (value === true) {
+                return value;
+            } else {
+                await tick();
+                currentTime = Number(new Date());
+            }
+        } while (currentTime < endTime);
+        throw new Error('timed out!');
+    };
 
-    public async waitForServerLogToContain(contains: string) {
-        const isLogReady = async () =>
-            this.serverLogExists() && (await this.getServerLog()).includes(contains);
+    public waitForAdbLogToExist = async () => {
+        await this.waitUntil(this.adbLogExists.bind(this));
+    };
 
-        return this.client.waitUntil(isLogReady, { timeout: DEFAULT_WAIT_FOR_LOG_TIMEOUT_MS });
-    }
+    public waitForServerLogToExist = async () => {
+        await this.waitUntil(this.serverLogExists.bind(this));
+    };
+
+    private waitForLogToContain = async (contains, log) => {
+        return await this.waitUntil((log, contains) => log.includes(contains), [log, contains]);
+    };
+
+    public waitForAdbLogToContain = async (contains: string) => {
+        await this.waitForAdbLogToExist();
+        await this.waitForLogToContain(contains, await this.getAdbLog());
+    };
+
+    public waitForServerLogToContain = async (contains: string) => {
+        await this.waitForServerLogToExist();
+        await this.waitForLogToContain(contains, await this.getServerLog());
+    };
 }

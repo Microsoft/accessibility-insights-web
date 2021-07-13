@@ -1,19 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import * as Electron from 'electron';
-import { AppConstructorOptions, Application } from 'spectron';
-import { retry } from 'tests/common/retry';
-
-import {
-    DEFAULT_APP_CONNECT_RETRIES,
-    DEFAULT_APP_CONNECT_TIMEOUT_MS,
-    DEFAULT_CHROMEDRIVER_START_RETRIES,
-    DEFAULT_CHROMEDRIVER_START_TIMEOUT_MS,
-} from 'tests/electron/setup/timeouts';
+import { _electron as electron } from 'playwright';
 import { AppController } from './view-controllers/app-controller';
-
-export interface AppOptions extends Partial<AppConstructorOptions> {
+export interface AppOptions {
     suppressFirstTimeDialog: boolean;
+    env?: {
+        ANDROID_HOME?: string;
+    };
 }
 
 export async function createApplication(options?: AppOptions): Promise<AppController> {
@@ -22,12 +16,16 @@ export async function createApplication(options?: AppOptions): Promise<AppContro
     }/drop/electron/unified-dev/product/bundle/main.bundle.js`;
 
     const unifiedOptions = {
+        ...options,
         env: {
             ANDROID_HOME: `${(global as any).rootDir}/drop/mock-adb`,
+            ACCESSIBILITY_INSIGHTS_ELECTRON_CLEAR_DATA: 'true',
+            ...options.env,
         },
-        ...options,
     };
+
     const appController = await createAppController(targetApp, unifiedOptions);
+    await appController.initialize();
 
     if (options?.suppressFirstTimeDialog === true) {
         await appController.setTelemetryState(false);
@@ -35,33 +33,16 @@ export async function createApplication(options?: AppOptions): Promise<AppContro
 
     return appController;
 }
-
 export async function createAppController(
     targetApp: string,
-    overrideSpectronOptions?: Partial<AppConstructorOptions>,
+    options?: Partial<AppOptions>,
 ): Promise<AppController> {
-    const app = await retry(
-        async () => {
-            const app = new Application({
-                path: Electron as any,
-                args: [targetApp],
-                connectionRetryCount: DEFAULT_APP_CONNECT_RETRIES,
-                connectionRetryTimeout: DEFAULT_APP_CONNECT_TIMEOUT_MS,
-                startTimeout: DEFAULT_CHROMEDRIVER_START_TIMEOUT_MS,
-                ...overrideSpectronOptions,
-            });
-            await app.start();
-            return app;
-        },
-        {
-            operationLabel: 'app.start',
-            warnOnRetry: true,
-            maxRetries: DEFAULT_CHROMEDRIVER_START_RETRIES,
-            retryOnlyIfMatches: err =>
-                err?.message?.includes('ChromeDriver did not start within') ||
-                err?.message?.includes('Failed to create session.\nread ECONNRESET'),
-        },
-    );
+    const app = await electron.launch({
+        args: [targetApp],
+        env: options.env,
+        path: Electron,
+        bypassCSP: true,
+    });
 
     return new AppController(app);
 }

@@ -24,8 +24,12 @@ const keyToPersistedDataMapping = {
 export function getPersistedData(
     indexedDBInstance: IndexedDBAPI,
     dataKeysToFetch: string[],
+    options?: { noPersistedData: boolean },
 ): Promise<PersistedData> {
     const persistedData = {} as PersistedData;
+    if (options?.noPersistedData) {
+        return Promise.resolve(persistedData);
+    }
 
     const promises: Array<Promise<any>> = dataKeysToFetch.map(key => {
         return indexedDBInstance.getItem(key).then(data => {

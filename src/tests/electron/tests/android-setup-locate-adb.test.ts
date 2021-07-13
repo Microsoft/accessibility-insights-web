@@ -48,7 +48,7 @@ describe('Android setup - locate adb', () => {
             'respects user-provided location',
         );
         await dialog.click('input[type="text"]');
-        await dialog.client.keys(`${(global as any).rootDir}/drop/mock-adb`);
+        await dialog.client.keyboard.type(`${(global as any).rootDir}/drop/mock-adb`);
 
         expect(await dialog.isEnabled(getAutomationIdSelector(nextId))).toBe(true);
         await dialog.click(getAutomationIdSelector(nextId));

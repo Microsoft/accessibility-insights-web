@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import { LeftNavItemKey } from 'electron/types/left-nav-item-key';
+import { Page } from 'playwright';
 import { ResultsViewSelectors } from 'tests/electron/common/element-identifiers/results-view-selectors';
 import { ScreenshotViewSelectors } from 'tests/electron/common/element-identifiers/screenshot-view-selectors';
 import { CardsViewController } from 'tests/electron/common/view-controllers/cards-view-controller';
-import { SpectronAsyncClient } from 'tests/electron/common/view-controllers/spectron-async-client';
 import { settingsPanelSelectors } from 'tests/end-to-end/common/element-identifiers/details-view-selectors';
 import { ViewController } from './view-controller';
 
 export class ResultsViewController extends ViewController {
-    constructor(client: SpectronAsyncClient) {
+    constructor(client: Page) {
         super(client);
     }
 
@@ -22,7 +22,6 @@ export class ResultsViewController extends ViewController {
     }
 
     public async openSettingsPanel(): Promise<void> {
-        await this.waitForSelector(ResultsViewSelectors.settingsButton);
         await this.click(ResultsViewSelectors.settingsButton);
         await this.waitForSelector(settingsPanelSelectors.settingsPanel);
         await this.waitForMilliseconds(750); // Allow for fabric's panel animation to settle
@@ -30,7 +29,6 @@ export class ResultsViewController extends ViewController {
 
     public async clickLeftNavItem(key: LeftNavItemKey): Promise<void> {
         const selector = this.getSelectorForLeftNavItemLink(key);
-        await this.waitForSelector(selector);
         await this.click(selector);
     }
 
@@ -62,7 +60,6 @@ export class ResultsViewController extends ViewController {
     }
 
     public async clickStartOver(): Promise<void> {
-        await this.waitForSelector(ResultsViewSelectors.startOverButton);
-        return this.click(ResultsViewSelectors.startOverButton);
+        return await this.click(ResultsViewSelectors.startOverButton);
     }
 }

@@ -1,22 +1,30 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 import * as fs from 'fs';
-import { SpectronAsyncClient } from 'tests/electron/common/view-controllers/spectron-async-client';
+import { Page } from 'playwright';
 import { DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS } from 'tests/electron/setup/timeouts';
+import { DEFAULT_PAGE_ELEMENT_WAIT_TIMEOUT_MS } from 'tests/end-to-end/common/timeouts';
 import { screenshotOnError } from '../../../end-to-end/common/screenshot-on-error';
 
 export abstract class ViewController {
-    constructor(public client: SpectronAsyncClient) {}
+    constructor(public client: Page) {}
 
     public async waitForSelector(
         selector: string,
         timeout: number = DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS,
     ): Promise<void> {
-        // Note: we're intentionally not using waitForVisible here because it has different
-        // semantics than Puppeteer; in particular, it requires the element be in the viewport
-        // but doesn't scroll the page to the element, so it's easy for it to fail in ways that
-        // are dependent on the test environment.
-        await this.screenshotOnError(async () => await this.client.waitForExist(selector, timeout));
+        await this.screenshotOnError(
+            async () => await this.client.waitForSelector(selector, { state: 'attached', timeout }),
+        );
+    }
+
+    public async waitForEnabled(
+        selector: string,
+        timeout: number = DEFAULT_PAGE_ELEMENT_WAIT_TIMEOUT_MS,
+    ) {
+        await this.screenshotOnError(
+            async () => await this.client.isEnabled(selector, { timeout }),
+        );
     }
 
     public async waitForNumberOfSelectorMatches(
@@ -25,32 +33,22 @@ export abstract class ViewController {
         timeout: number = DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS,
     ): Promise<void> {
         await this.screenshotOnError(async () => {
-            await this.client.waitUntil(
-                async () => {
-                    return (await this.client.$$(selector)).length === expectedNumber;
-                },
-                {
-                    timeout,
-                    timeoutMsg: `expected to find ${expectedNumber} matches for selector ${selector} within ${timeout}ms`,
-                },
-            );
+            await this.client.waitForSelector(`:nth-match(${selector}, ${expectedNumber})`, {
+                timeout,
+            });
         });
     }
 
-    // Webdriver waits the full implicit waitForTimeout before returning not-found.
-    // This means we need to wrap the waitForExist call with a longer timeout when
-    // reverse is true. See webdriverio@2082 and ai-web@3599.
     public async waitForSelectorToDisappear(
         selector: string,
         timeout: number = DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS * 2,
     ): Promise<void> {
-        await this.screenshotOnError(async () =>
-            this.client.waitForExist(
-                selector,
-                timeout,
-                true,
-                `was expecting element by selector ${selector} to disappear`,
-            ),
+        await this.screenshotOnError(
+            async () =>
+                await this.client.waitForSelector(selector, {
+                    timeout,
+                    state: 'detached',
+                }),
         );
     }
 
@@ -60,30 +58,27 @@ export abstract class ViewController {
     // time-based delay (eg, a UI element animates in before becoming active), NOT sprinkled in
     // randomly in the hopes that it improves reliability.
     public async waitForMilliseconds(durationInMilliseconds: number): Promise<void> {
-        await this.client.pause(durationInMilliseconds);
+        await this.client.waitForTimeout(durationInMilliseconds);
     }
 
     public async click(selector: string): Promise<void> {
-        await this.screenshotOnError(async () => this.client.click(selector));
+        await this.screenshotOnError(async () => await this.client.click(selector));
     }
 
     public async isEnabled(selector: string): Promise<boolean> {
-        return await this.screenshotOnError(async () => this.client.isEnabled(selector));
+        return await this.screenshotOnError(async () => await this.client.isEnabled(selector));
     }
 
     public async itemTextIncludesTarget(selector: string, target: string): Promise<boolean> {
         return await this.screenshotOnError(async () => {
-            const itemText: string = await this.client.getText(selector);
+            const itemText: string = await this.client.innerText(selector);
             return itemText.includes(target);
         });
     }
 
     private async screenshotOnError<T>(wrappedFunction: () => Promise<T>): Promise<T> {
         return await screenshotOnError(
-            path =>
-                this.client.browserWindow
-                    .capturePage()
-                    .then(buffer => fs.writeFileSync(path, buffer)),
+            path => this.client.screenshot().then(buffer => fs.writeFileSync(path, buffer)),
             wrappedFunction,
         );
     }

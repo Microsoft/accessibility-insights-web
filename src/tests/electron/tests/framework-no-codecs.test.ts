@@ -39,7 +39,7 @@ const releaseTests = process.env.RUN_RELEASE_TESTS === 'true';
         });
 
         it('uses expected build during release', async () => {
-            const buildId = await viewContoller.client.execute(() => {
+            const buildId = await viewContoller.client.evaluate(() => {
                 return (window as any).process.versions['microsoft-build'];
             });
             expect(buildId).toBe(electronBuildId);

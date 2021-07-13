@@ -9,13 +9,8 @@ export const DEFAULT_ELECTRON_TEST_TIMEOUT_MS = 60000;
 export const DEFAULT_APP_CONNECT_TIMEOUT_MS = 10000;
 export const DEFAULT_APP_CONNECT_RETRIES = 3;
 
-// These govern how long Spectron should allow for ChromeDriver to start
-// The product of these should be significantly less than the test timeout
-export const DEFAULT_CHROMEDRIVER_START_TIMEOUT_MS = 5000;
-export const DEFAULT_CHROMEDRIVER_START_RETRIES = 3;
-
 // How long to wait for an element to be visible
-export const DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS = 5000;
+export const DEFAULT_WAIT_FOR_ELEMENT_TO_BE_VISIBLE_TIMEOUT_MS = 10000;
 
 // How long of a wait to artificially inject between element hover/mousedown/mouseup during clicks
 export const DEFAULT_CLICK_HOVER_DELAY_MS = 100;
