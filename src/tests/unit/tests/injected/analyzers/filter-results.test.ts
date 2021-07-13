@@ -10,6 +10,7 @@ describe('filterNeedsReviewResults', () => {
         const inapplicableOnlyRule0 = 'color-contrast';
         const inapplicableOnlyRule1 = 'aria-input-field-name';
         const inapplicableOnlyRule2 = 'th-has-data-cells';
+        const inapplicableOnlyRule3 = 'label-content-name-mismatch';
         const testRule = 'test rule';
         const given: ScanResults = {
             violations: [
@@ -18,6 +19,7 @@ describe('filterNeedsReviewResults', () => {
                 getRuleResultStub(inapplicableOnlyRule0),
                 getRuleResultStub(inapplicableOnlyRule1),
                 getRuleResultStub(inapplicableOnlyRule2),
+                getRuleResultStub(inapplicableOnlyRule3),
             ],
             incomplete: [
                 getRuleResultStub(testRule),
@@ -25,6 +27,7 @@ describe('filterNeedsReviewResults', () => {
                 getRuleResultStub(inapplicableOnlyRule0),
                 getRuleResultStub(inapplicableOnlyRule1),
                 getRuleResultStub(inapplicableOnlyRule2),
+                getRuleResultStub(inapplicableOnlyRule3),
             ],
             passes: [getRuleResultStub(testRule)],
             inapplicable: [getRuleResultStub(testRule)],
@@ -40,6 +43,7 @@ describe('filterNeedsReviewResults', () => {
                 getRuleResultStub(inapplicableOnlyRule0),
                 getRuleResultStub(inapplicableOnlyRule1),
                 getRuleResultStub(inapplicableOnlyRule2),
+                getRuleResultStub(inapplicableOnlyRule3),
             ],
         };
 

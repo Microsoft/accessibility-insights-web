@@ -186,8 +186,8 @@ Object {
     "status": "included",
   },
   "label-content-name-mismatch": Object {
-    "reason": "rule is tagged experimental",
-    "status": "excluded",
+    "reason": "to include in Needs Review since its an experimental rule",
+    "status": "included",
   },
   "label-title-only": Object {
     "reason": "rule is tagged best-practice",
